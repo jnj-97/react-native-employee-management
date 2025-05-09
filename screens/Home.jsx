@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, FlatList, Image } from "react-native";
 import { Card, FAB } from "react-native-paper";
 
-function Home() {
+function Home(props) {
   const sampleData = [
     {
       id: 1,
@@ -64,7 +64,10 @@ function Home() {
 
   const renderCard = ({ item }) => {
     return (
-      <Card style={styles.card}>
+      <Card
+        style={styles.card}
+        onPress={() => props.navigation.navigate("Profile ")}
+      >
         <View style={styles.cardContent}>
           <Image style={styles.profilePicture} source={{ uri: item.image }} />
           <View style={styles.textContainer}>
@@ -77,7 +80,7 @@ function Home() {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={sampleData}
         renderItem={renderCard}
@@ -87,7 +90,7 @@ function Home() {
         style={styles.fab}
         icon="plus"
         small={false}
-        onPress={() => console.log("Pressed")}
+        onPress={() => props.navigation.navigate("Create Employee")}
       />
     </View>
   );
