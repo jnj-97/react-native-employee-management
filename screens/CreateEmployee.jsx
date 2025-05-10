@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Modal, View, StyleSheet } from "react-native";
+import { Modal, View, StyleSheet, Alert } from "react-native";
 import { Button, TextInput } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
 
 function CreateEmployee() {
   const [name, setName] = useState("");
@@ -10,7 +11,70 @@ function CreateEmployee() {
   const [image, setImage] = useState("");
   const [salary, setSalary] = useState("");
   const [modal, setModal] = useState(false);
+  const [picture, setPicture] = useState("");
 
+  async function galleryPicker() {
+    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status === "granted") {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.25,
+      });
+      console.log(data);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        let asset = result.assets[0];
+        let newFile = {
+          uri: asset.uri,
+          type: `test/${asset.uri.split(".").pop()}`,
+          name: `test.${asset.uri.split(".").pop()}`,
+        };
+        handleUpload(newFile);
+      }
+    } else Alert.alert("gallery permission denied");
+  }
+
+  async function cameraPicker() {
+    let { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status === "granted") {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.25,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        let asset = result.assets[0];
+        let newFile = {
+          uri: asset.uri,
+          type: `test/${asset.uri.split(".")[1]}`,
+          name: `test.${asset.uri.split(".")[1]}`,
+        };
+        handleUpload(newFile);
+      }
+    } else Alert.alert("gallery permission denied");
+  }
+
+  function handleUpload(image) {
+    const data = new FormData();
+    data.append("file", image);
+    data.append("upload_preset", "employee_app");
+    data.append("cloud_name", "dovti3yk8");
+
+    fetch("https://api.cloudinary.com/v1_1/dovti3yk8/image/upload", {
+      method: "post",
+      body: data,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setPicture(data.url);
+      })
+      .catch((err) => {
+        console.log("Error uploading image: ", err);
+      });
+  }
   const styles = StyleSheet.create({
     mainButtons: {
       margin: 5,
@@ -73,7 +137,7 @@ function CreateEmployee() {
         onChangeText={(text) => setSalary(text)}
       />
       <Button
-        icon="upload"
+        icon={picture === "" ? "upload" : "check"}
         style={styles.mainButtons}
         mode="contained"
         onPress={() => setModal(true)}
@@ -95,10 +159,18 @@ function CreateEmployee() {
       >
         <View style={styles.modal}>
           <View style={styles.modalButtons}>
-            <Button icon="camera" mode="contained">
+            <Button
+              icon="camera"
+              mode="contained"
+              onPress={() => cameraPicker()}
+            >
               Take Photo
             </Button>
-            <Button icon="image-area" mode="contained">
+            <Button
+              icon="image-area"
+              mode="contained"
+              onPress={() => galleryPicker()}
+            >
               From Gallery
             </Button>
           </View>
