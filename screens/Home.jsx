@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,16 +10,19 @@ import {
 import { Card, FAB } from "react-native-paper";
 import Constants from "expo-constants";
 import { useSelector, useDispatch } from "react-redux";
+import { myContext } from "../App";
 
 function Home(props) {
   // const [data, setData] = useState([]);
   // const [loading, setLoading] = useState(false);
   const { BACKEND_URL } = Constants.expoConfig.extra;
 
-  const { data, loading } = useSelector((state) => {
-    return state;
-  });
-  const dispatch = useDispatch();
+  // const { data, loading } = useSelector((state) => {
+  //   return state;
+  // });
+  // const dispatch = useDispatch();
+  const { state, dispatch } = useContext(myContext);
+  const { data, loading } = state;
 
   useEffect(() => {
     const fetchData = async () => {
