@@ -1,72 +1,58 @@
-import React from "react";
-import { StyleSheet, Text, View, FlatList, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { Card, FAB } from "react-native-paper";
+import Constants from "expo-constants";
+import { useSelector, useDispatch } from "react-redux";
 
 function Home(props) {
-  const sampleData = [
-    {
-      id: 1,
-      name: "John Doe",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "FSD",
-    },
-    {
-      id: 2,
-      name: "Emilia Clark",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "Backend Developer",
-    },
-    {
-      id: 3,
-      name: "Derrick Baker",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "Front end Developer",
-    },
-    {
-      id: 4,
-      name: "Adam Russo",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "Analyst",
-    },
-    {
-      id: 5,
-      name: "Mathew Herd",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "HR",
-    },
-    {
-      id: 6,
-      name: "Steve Johnson",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "Marketing Specialist",
-    },
-    {
-      id: 7,
-      name: "Jack Daniel",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "CFO",
-    },
-    {
-      id: 8,
-      name: "Joanne Beltz",
-      image:
-        "https://images.unsplash.com/photo-1656918358725-faeeadfdfee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      designation: "Project Manager",
-    },
-  ];
+  // const [data, setData] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  const { BACKEND_URL } = Constants.expoConfig.extra;
+
+  const { data, loading } = useSelector((state) => {
+    return state;
+  });
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("backend url: ", BACKEND_URL);
+        const response = await fetch(BACKEND_URL + "/");
+        let result = await response.json();
+        dispatch({ type: "ADD_DATA", payload: result });
+        dispatch({ type: "SET_LOADING", payload: false });
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const onRefresh = async () => {
+    try {
+      const response = await fetch(BACKEND_URL + "/");
+      let result = await response.json();
+      dispatch({ type: "ADD_DATA", payload: result });
+      dispatch({ type: "SET_LOADING", payload: false });
+    } catch (err) {
+      console.error("Refresh error:", err);
+    }
+  };
 
   const renderCard = ({ item }) => {
     return (
       <Card
         style={styles.card}
-        onPress={() => props.navigation.navigate("Profile ")}
+        onPress={() => props.navigation.navigate("Profile", { item })}
       >
         <View style={styles.cardContent}>
           <Image style={styles.profilePicture} source={{ uri: item.image }} />
@@ -81,11 +67,17 @@ function Home(props) {
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList
-        data={sampleData}
-        renderItem={renderCard}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderCard}
+          keyExtractor={(item) => item._id}
+          refreshing={loading}
+          onRefresh={() => onRefresh()}
+        />
+      )}
       <FAB
         style={styles.fab}
         icon="plus"

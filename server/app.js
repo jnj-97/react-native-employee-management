@@ -5,7 +5,12 @@ const Employee = require("./models/Employee").default;
 const app = express();
 app.use(express.json());
 
-app.get("/", async (req, res) => res.send(await Employee.find({})));
+app.get("/", async (req, res) => {
+  const result = await Employee.find({});
+  console.log(result);
+  console.log("hit");
+  res.json(result);
+});
 
 app.post("/delete", async (req, res) => {
   await Employee.findByIdAndDelete(req.body.id);

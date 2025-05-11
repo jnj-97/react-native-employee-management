@@ -6,6 +6,7 @@ const EmployeeSchema = new mongoose.Schema({
   phone: Number,
   image: String,
   designation: String,
+  salary: Number,
 });
 
 const Employee = mongoose.model("Employee", EmployeeSchema);
